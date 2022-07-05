@@ -1,0 +1,66 @@
+{
+  "settings": [
+    	{
+      "id": "selName",
+      "name": "Object name with time variables",
+      "description": "Provide the name of the move object containing the table of start and end timestamps (e.g. 'nest' for output of Nest Detection App).",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+		{
+      "id": "trackVar",
+      "name": "Track name variable",
+      "description": "Provide the name of the variable indicating the individual tracks to filter. This must overlap with tracks IDs of the data set that shall be filtered.",
+      "defaultValue": "individual.local.identifier",
+      "type": "STRING"
+    },
+		{
+      "id": "startVar",
+      "name": "Start time variable name",
+      "description": "Provide the name of the variable indicating the individual track start times.",
+      "defaultValue": null,
+      "type": "STRING"
+    },
+		{
+      "id": "endVar",
+      "name": "End time variable name",
+      "description": "Provide the name of the variable indicating the individual track end times.",
+      "defaultValue": null,
+      "type": "STRING"
+    }
+  ],
+  "dependencies": {
+    "R": [
+      {
+        "name": "move"
+      },
+	  {
+        "name": "foreach"
+      }
+	]
+  },
+  "license": {
+    "key": "MIT"
+  },
+  "language": "eng",
+  "keywords": [
+    "filter",
+    "time range",
+	"individual"
+  ],
+  "people": [
+    {
+      "firstName": "Andrea",
+      "middleInitials": null,
+      "lastName": "Kölzsch",
+      "email": "akoelzsch@ab.mpg.de",
+      "roles": ["author", "creator"],
+      "orcid": "0000-0003-0193-1563",
+      "affiliation": "Max-Planck-Institute of Animal Behavior",
+      "affiliationRor": "https://ror.org/026stee22"
+    }
+  ],
+  "documentation" : {
+    "url": "https://github.com/movestore/FilterData-by-IndivTime/blob/main/README.md"
+  }
+}
