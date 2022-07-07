@@ -2,7 +2,7 @@ library(jsonlite)
 source("logger.R")
 source("RFunction.R")
 
-inputFileName = "data_plus_nest.rds" #important to set to NULL for movebank-download
+inputFileName = "stork_plus_nests.rds" #important to set to NULL for movebank-download
 outputFileName = "output.rds"
 
 args <- list()
@@ -17,8 +17,8 @@ args <- list()
 #    args[["password"]] = "any-password"
 
 # Add your arguments of your r function here
-args[["selName"]] = "nest"
-args[["trackVar"]] = "individual.local.identifier"
+args[["selName"]] = "nesting"
+args[["trackVar"]] = "trackId"
 args[["startVar"]] = "first_date"
 args[["endVar"]] = "last_date"
 #args[["endTime"]] = "2015-02-02T00:00:00.000Z"
