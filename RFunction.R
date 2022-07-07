@@ -17,6 +17,8 @@ rFunction <- function(data, selName=NULL, startVar=NULL, endVar=NULL, trackVar="
    
     data.split <- move::split(data)
     
+    id_ix <- numeric()
+    
     data_filter <- foreach(datai = data.split) %do% {
       id <- namesIndiv(datai)
       logger.info(id)
@@ -67,14 +69,15 @@ rFunction <- function(data, selName=NULL, startVar=NULL, endVar=NULL, trackVar="
         {
           dataif <- datai[timestamps(datai)>=time1 & timestamps(datai)<=timeN,]
           logger.info(paste("Filtering successful. It found",length(dataif),"positions of",length(datai),"locations for the track",id,"."))
+          id_ix <- c(id_ix,namesIndiv(datai))
         }
       }
 
       dataif
     }
-    names(data_filter) <- selT@data[,trackVar]
-    
     data_filter.nozero <- data_filter[unlist(lapply(data_filter, length) > 0)]
+    names(data_filter.nozero) <- id_ix
+    
     result <- moveStack(data_filter.nozero,forceTz="UTC")
 
   }
