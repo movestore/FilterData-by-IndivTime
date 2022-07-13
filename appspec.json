@@ -11,7 +11,7 @@
       "id": "trackVar",
       "name": "Track name variable",
       "description": "Provide the name of the variable indicating the individual tracks to filter. This must overlap with tracks IDs of the data set that shall be filtered.",
-      "defaultValue": "individual.local.identifier",
+      "defaultValue": "trackId",
       "type": "STRING"
     },
 		{

@@ -78,7 +78,7 @@ rFunction <- function(data, selName=NULL, startVar=NULL, endVar=NULL, trackVar="
     data_filter.nozero <- data_filter[unlist(lapply(data_filter, length) > 0)]
     names(data_filter.nozero) <- id_ix
     
-    result <- moveStack(data_filter.nozero,forceTz="UTC")
+    if (length(data_filter.nozero)>0) result <- moveStack(data_filter.nozero,forceTz="UTC") else result <- NULL
 
   }
 
