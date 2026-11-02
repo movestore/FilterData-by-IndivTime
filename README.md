@@ -10,12 +10,12 @@ Selects a time section of each track: the first or last specified duration of ea
 ## Documentation
 This App filters the locations of each track to a selected time section. The user chooses one of six time selection modes:
 
-1. **First specified duration of each track**: keeps all locations from the first location of each track until the specified duration has passed (e.g. the first 3 months of each track). All tracks have the same duration, but their start times can differ.
-2. **Last specified duration of each track**: keeps all locations from the specified duration before the last location of each track until its last location (e.g. the last 3 months of each track). All tracks have the same duration, but their end times can differ.
-3. **From a specified timestamp to the end of each track**: keeps all locations at or after the given timestamp (e.g. from 2021-03-15 to the end of each track). All tracks start at the same time, but their durations can differ.
-4. **From the start of each track to a specified timestamp**: keeps all locations at or before the given timestamp (e.g. from the start of each track to 2023-07-20). All tracks end at the same time, but their durations can differ.
-5. **Between two specified timestamps**: keeps all locations between the given start and end timestamps (e.g. from 2023-05-01 to 2023-07-01) for all tracks.
-6. **Custom time range for each track**: keeps for each track the locations between a start and an end timestamp given in an uploaded table (.csv) with one row per track. If the start of a track is empty, its first location is used; if the end is empty, its last location is used. This gives full flexibility over which section of each track is selected.
+1. `First specified duration of each track`
+2. `Last specified duration of each track`
+3. `From a specified timestamp to the end of each track`
+4. `From the start of each track to a specified timestamp`
+5. `Between two specified timestamps`
+6. `Custom time range for each track`
 
 In all modes, both the start and the end of the time range are included in the selection (start <= timestamp <= end). The only exception is an end given as a date only in the custom table (e.g. `2020-08-29`): this includes the whole day, i.e. all locations before midnight of the following day.
 
@@ -44,7 +44,14 @@ The App should work for any kind of location data. For the mode 'Custom time ran
 `track_time_table.csv`: only created if `Create editable time table` is selected. A csv file with one row per track of the input data and three columns: track ID, timestamp of the first location and timestamp of the last location of the track (format `YYYY-MM-DDTHH:MM:SSZ`, UTC, e.g. `2014-08-03T02:01:23Z`). The column names are taken from the settings `Track ID column name`, `Start timestamp column name` and `End timestamp column name`, so that the table can be edited and directly uploaded in the mode 'Custom time range for each track'.
 
 ### Settings
-`Time selection mode` (mode): Selects how the time section of each track is chosen. Options: 'First specified duration of each track' (`first`), 'Last specified duration of each track' (`last`), 'From a specified timestamp to the end of each track' (`from_time`), 'From the start of each track to a specified timestamp' (`until_time`), 'Between two specified timestamps' (`between`), 'Custom time range for each track' (`custom`). Default: `first`.
+`Time selection mode` (mode): Selects how the time section of each track is chosen. Default: `first`. Options:
+
+1. First specified duration of each track (`first`): keeps all locations from the first location of each track until the specified duration has passed (e.g. the first 3 months of each track). All tracks have the same duration, but their start times can differ.
+2. Last specified duration of each track (`last`): keeps all locations from the specified duration before the last location of each track until its last location (e.g. the last 3 months of each track). All tracks have the same duration, but their end times can differ.
+3. From a specified timestamp to the end of each track (`from_time`): keeps all locations at or after the given timestamp (e.g. from 2021-03-15 to the end of each track). All tracks start at the same time, but their durations can differ.
+4. From the start of each track to a specified timestamp (`until_time`): keeps all locations at or before the given timestamp (e.g. from the start of each track to 2023-07-20). All tracks end at the same time, but their durations can differ.
+5. Between two specified timestamps (`between`): keeps all locations between the given start and end timestamps (e.g. from 2023-05-01 to 2023-07-01) for all tracks.
+6. Custom time range for each track (`custom`): keeps for each track the locations between a start and an end timestamp given in an uploaded table (.csv) with one row per track. If the start of a track is empty, its first location is used; if the end is empty, its last location is used. This gives full flexibility over which section of each track is selected.
 
 `Duration` (duration): Only used for the modes 'First specified duration of each track' and 'Last specified duration of each track'. Length of the time section to select, counted from the first location, or backwards from the last location, of each track. Must be larger than 0. For months and years it must be a whole number. Unit: as selected in `Duration unit`. Default: no default (must be set for these modes).
 
@@ -81,9 +88,5 @@ The App filters the input data to the selected time section of each track. No co
 **No data in time range:** If none of the locations lie in the selected time range(s), the App returns NULL with a warning. Check that the selected timestamps or durations fit the time span of your data.
 
 ### Technical details
-- The App uses the `move2` package (`mt_track_id()`, `mt_time()`) to access track IDs and timestamps, and the `lubridate` package for calendar month/year arithmetic (`%m+%`, `%m-%`).
-- The timestamps of the custom table are read with an own parser that accepts the ISO 8601 format and common Excel formats, rejects invalid values and slash dates that look like day/month/year instead of guessing, and warns about dates that could be read both ways.
-- The time range is determined per track: the first and last valid timestamps of each track are used for the 'first/last specified duration' modes and for empty cells of the custom table.
-- The data are filtered in one step on the whole data set (`data[keep, ]`), so the order of locations, the projection and all event and track attributes of the kept data remain unchanged.
-- All timestamps are handled in UTC.
-- The App is based on the App 'Filter by Individual Time Intervals' (move/moveStack), in which the start and end times had to be stored as an additional track in the data. Here they are provided as an uploaded table instead.
+- Time ranges are determined per track; all timestamps are in UTC.
+- The kept data remain unchanged (order, projection, attributes).
