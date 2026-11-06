@@ -111,10 +111,8 @@ read_custom_table <- function(file, track_col, start_col, end_col) {
 
 
 ### Main Function
-rFunction <- function(data, mode = "first", duration = NULL, duration_unit = "days",
-                      start_time = NULL, end_time = NULL,
-                      track_col = "track_id", start_col = "start_timestamp", end_col = "end_timestamp",
-                      create_table = FALSE, ...) {
+rFunction <- function(data, mode, duration, duration_unit, start_time, end_time,
+                      track_col, start_col, end_col, create_table, ...) {
 
   ## Default column names
   # empty column-name settings fall back to the default names
