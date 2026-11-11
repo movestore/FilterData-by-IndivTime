@@ -1,42 +1,92 @@
 # Filter Data by Indiv Time
+
 MoveApps
 
-Github repository: *github.com/movestore/FilterData-by-IndivTime*
+Github repository: *[github.com/movestore/FilterData-by-IndivTime](https://github.com/movestore/FilterData-by-IndivTime)*
 
 ## Description
-Filters your data set by track/individual specific time ranges that are provided as table/move object.
+Selects a time section of each track: the first or last specified duration of each track, all locations from or until a specified timestamp, all locations between two timestamps, or a custom time range per track uploaded as a table. Optionally creates an editable table with the first and last timestamp of each track.
 
 ## Documentation
-This App requires as input a data set consisting of tracks and one track (called e.g. 'nest') that containes information about track specific start and end timestamps by which the tracks shall be filtered. Note that the names of the tracks and those in the e.g. 'nest' table must be equal. Variable names must be given in the exact spelling as in the data, refer to the Track Attributes in the data summary of the previous App.
+This App filters the locations of each track to a selected time section. The user chooses one of six time selection modes:
 
-The use case for which this App was built is to filter data for nesting times. The nest object is generated in the Nest Detection App and can be appended to tracks with the same track names by the Cloud Storage App.
+1. `First specified duration of each track`
+2. `Last specified duration of each track`
+3. `From a specified timestamp to the end of each track`
+4. `From the start of each track to a specified timestamp`
+5. `Between two specified timestamps`
+6. `Custom time range for each track`
 
-### Input data
-moveStack in Movebank format
+In all modes, both the start and the end of the time range are included in the selection (start <= timestamp <= end). The only exception is an end given as a date only in the custom table (e.g. `2020-08-29`): this includes the whole day, i.e. all locations before midnight of the following day.
 
-### Output data
-moveStack in Movebank format
+Durations in hours, days and weeks are exact lengths of time. Months and years are calendar periods (e.g. 15 Jan + 3 months = 15 Apr; 31 Jan + 1 month = 28/29 Feb).
+
+To make the custom table easy to prepare, the App can create an editable table `track_time_table.csv` with the first and last timestamp of each track of the input data. This table can be downloaded, edited (e.g. changing times or deleting rows of tracks that should be removed) and uploaded again in the mode 'Custom time range for each track'. The timestamps in this table use the international standard format `YYYY-MM-DDTHH:MM:SSZ` (e.g. `2014-08-03T02:01:23Z`), the same format that MoveApps uses for timestamps. It is recommended to keep this format when editing the table.
+
+If the table is opened and saved in Excel, Excel may change the timestamp format (e.g. to `8/3/2014 2:01`) and remove the seconds, depending on the Excel version and settings. The App can also read these Excel formats, but please check the warnings in the logs: dates with `/` are read as month/day/year, and times without seconds are used as `HH:MM:00`. To be safe, check the saved file in a text editor before uploading it.
+
+Tracks without any location in their selected time range are removed from the output. For each track, the logs show the selected time range (start and end, UTC) and how many locations were selected.
+
+### Application scope
+#### Generality of App usability
+This App was developed for any taxonomic group.
+
+#### Required data properties
+The App should work for any kind of location data. For the mode 'Custom time range for each track', the track IDs in the uploaded table must match the track IDs of the input data exactly.
+
+### Input type
+`move2::move2_loc`
+
+### Output type
+`move2::move2_loc`
 
 ### Artefacts
-none
+`track_time_table.csv`: only created if `Create editable time table` is selected. A csv file with one row per track of the input data and three columns: track ID, timestamp of the first location and timestamp of the last location of the track (format `YYYY-MM-DDTHH:MM:SSZ`, UTC, e.g. `2014-08-03T02:01:23Z`). The column names are taken from the settings `Track ID column name`, `Start timestamp column name` and `End timestamp column name`, so that the table can be edited and directly uploaded in the mode 'Custom time range for each track'.
 
-### Parameters 
-`selVar`: Name of the object containing the start and end timestamps. E.g. `nest` when using rds output from Nest Detection App.
+### Settings
+`Time selection mode` (mode): Selects how the time section of each track is chosen. Default: `first`. Options:
 
-`trackVar`: Name of the track ID variable in the object containing the start and end timestamps. Take care that this parameter also exists in the track attributes of the input data set.
+1. First specified duration of each track (`first`): keeps all locations from the first location of each track until the specified duration has passed (e.g. the first 3 months of each track). All tracks have the same duration, but their start times can differ.
+2. Last specified duration of each track (`last`): keeps all locations from the specified duration before the last location of each track until its last location (e.g. the last 3 months of each track). All tracks have the same duration, but their end times can differ.
+3. From a specified timestamp to the end of each track (`from_time`): keeps all locations at or after the given timestamp (e.g. from 2021-03-15 to the end of each track). All tracks start at the same time, but their durations can differ.
+4. From the start of each track to a specified timestamp (`until_time`): keeps all locations at or before the given timestamp (e.g. from the start of each track to 2023-07-20). All tracks end at the same time, but their durations can differ.
+5. Between two specified timestamps (`between`): keeps all locations between the given start and end timestamps (e.g. from 2023-05-01 to 2023-07-01) for all tracks.
+6. Custom time range for each track (`custom`): keeps for each track the locations between a start and an end timestamp given in an uploaded table (.csv) with one row per track. If the start of a track is empty, its first location is used; if the end is empty, its last location is used. This gives full flexibility over which section of each track is selected.
 
-`startVar`: Name of the start time variable. Take care that this parameter also exists in the track attributes of the input data set. Times must be provided in the format `YYYY-MM-DD` (if date) or `YYYY-MM-DD HH:MM:SS.SSS`.
+`Duration` (duration): Only used for the modes 'First specified duration of each track' and 'Last specified duration of each track'. Length of the time section to select, counted from the first location, or backwards from the last location, of each track. Must be larger than 0. For months and years it must be a whole number. Unit: as selected in `Duration unit`. Default: no default (must be set for these modes).
 
-`endVar`: Name of the end time variable. Take care that this parameter also exists in the track attributes of the input data set. Times must be provided in the format `YYYY-MM-DD` (if date) or `YYYY-MM-DD HH:MM:SS.SSS`.
+`Duration unit` (duration_unit): Only used for the modes 'First specified duration of each track' and 'Last specified duration of each track'. Unit of the duration. Options: `hours`, `days`, `weeks`, `months`, `years`. Months and years are calendar periods. Default: `days`.
 
+`Start timestamp` (start_time): Only used for the modes 'From a specified timestamp to the end of each track' and 'Between two specified timestamps'. All locations at or after this timestamp (UTC) are kept. Default: no default (must be set for these modes).
 
-### Null or error handling:
-**Parameter `selVar`:** If there is no object with the given name the App will run into an error.
+`End timestamp` (end_time): Only used for the modes 'From the start of each track to a specified timestamp' and 'Between two specified timestamps'. All locations at or before this timestamp (UTC) are kept. Default: no default (must be set for these modes).
 
-**Parameter `trackVar`:** If there is no variable with the name given here, an error will be returned.
+`Custom time table` (custom_table): Only used for the mode 'Custom time range for each track'. A .csv file with one row per track and three columns: track ID, start timestamp and end timestamp. Timestamps must be in UTC. The recommended format is `YYYY-MM-DDTHH:MM:SSZ` (e.g. `2014-08-03T02:01:23Z`), as in the table created by the App. Also accepted are `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM` and `YYYY-MM-DD`, as well as Excel formats: month/day/year with `/` (e.g. `8/3/2014 2:01`, `8/3/2014 2:01:23`, `8/3/2014 2:01 PM`) and day.month.year with `.` (e.g. `03.08.2014 02:01`). Years must have 4 digits. An empty start uses the first location of the track, an empty end the last location. A date-only end includes the entire day, a date-only start begins at 00:00:00. A time without seconds is used exactly as `HH:MM:00`. Tracks not listed in the table are removed, and each track ID may appear only once. Default: no file.
 
-**Parameter `startVar`:** If there is no variable with the name given here, the individual track will not be filtered in this direction.
+`Track ID column name` (track_col): Name of the column with the track IDs in the custom table. Also used as column name in the created time table. Default: `track_id`.
 
-**Parameter `endVar`:** If there is no variable with the name given here, the individual track will not be filtered in this direction.
+`Start timestamp column name` (start_col): Name of the column with the start timestamps in the custom table. Also used as column name in the created time table. Default: `start_timestamp`.
 
-**Data:** If none of the locations in the input data set are in the required time intervals, a warning is given and a NULL data set is returned. 
+`End timestamp column name` (end_col): Name of the column with the end timestamps in the custom table. Also used as column name in the created time table. Default: `end_timestamp`.
+
+`Create editable time table` (create_table): If selected, the artefact `track_time_table.csv` with the first and last timestamp of each track of the input data is created. Default: `false`.
+
+### Changes in output data
+The App filters the input data to the selected time section of each track. No columns are added or changed. Tracks without any location in their selected time range are removed.
+
+### Errors and null handling
+**Setting `mode`:** For the modes 'First specified duration of each track' and 'Last specified duration of each track', the App stops with an error if no `duration` larger than 0 is given, if `duration_unit` is not one of hours, days, weeks, months or years, or if a non-whole number of months or years is given (e.g. 1.5 months). For the modes using timestamps, the App stops with an error if the required `start_time` and/or `end_time` is not given or cannot be read. Settings that are not used by the selected mode are ignored.
+
+**Start after end:** If the start timestamp is after the end timestamp (in the mode 'Between two specified timestamps' or for a track in the custom table), the App assumes that they were switched, swaps them and gives a warning.
+
+**Setting `custom_table`:** In the mode 'Custom time range for each track', the App stops with an error if no table is uploaded, if the table does not contain the columns named in `Track ID column name`, `Start timestamp column name` and `End timestamp column name`, if a track ID appears more than once, or if a timestamp cannot be read, e.g. 2-digit years or impossible dates such as `2014-02-31` (the error lists the values that could not be read). Dates with `/` are read as month/day/year: if a value looks like day/month/year (e.g. `14/8/2014`), the App stops instead of guessing, and if a value could be read both ways (e.g. `8/3/2014`), a warning lists these values so that they can be checked. If timestamps have no seconds (e.g. removed by Excel), a warning is given, and an additional warning names the tracks whose last location is excluded because it lies after the end time within the same minute. Track IDs of the table that are not in the data are ignored with a warning. Tracks of the data that are not in the table are removed with a warning.
+
+**Column name settings:** If `Track ID column name`, `Start timestamp column name` or `End timestamp column name` is left empty, the default names `track_id`, `start_timestamp` and `end_timestamp` are used.
+
+**Input data:** Locations without a timestamp are removed with a warning. Tracks without any valid timestamp are removed with a warning; if no location has a valid timestamp, the App returns NULL.
+
+**No data in time range:** If none of the locations lie in the selected time range(s), the App returns NULL with a warning. Check that the selected timestamps or durations fit the time span of your data.
+
+### Technical details
+- Time ranges are determined per track; all timestamps are in UTC.
+- The kept data remain unchanged (order, projection, attributes).

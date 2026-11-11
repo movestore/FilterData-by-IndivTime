@@ -1,0 +1,11 @@
+{
+  "mode": "last",
+  "duration": 2,
+  "duration_unit": "months",
+  "start_time": null,
+  "end_time": null,
+  "track_col": "track",
+  "start_col": "first_date",
+  "end_col": "last_date",
+  "create_table": false
+}
